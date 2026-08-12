@@ -1,26 +1,27 @@
 # Luryn
 
-**Let hostile probes teach the defense.** Luryn is an experimental GenLayer-native defensive cyberdeception lab for explicitly owned, bounded smart-contract decoys on Studionet. It classifies observed interaction behavior, not people or criminality.
+**Let hostile probes teach the defense.** Luryn is a GenLayer application for explicitly owned, no-value smart-contract decoys on StudioNet/testnets. It classifies observed interaction behavior—not people, identity, or criminality—and records conservative mitigation lessons.
 
-## The GenLayer judgment
+## What GenLayer judges
 
-> What does this observed interaction appear to be trying to do to this declared defensive decoy, and what defensive lesson can responsibly be extracted from it?
+Validators independently assess the bounded question: *what does a public interaction appear to be trying to do to this declared decoy, and what defensive lesson is supported by the evidence?* Deterministic contract code remains authoritative for authorization, IDs, policy snapshots, source allowlisting, replay prevention, state transitions, and publication permissions.
 
-Ordinary contracts record calls but cannot independently judge contextual intent from changing public evidence. Luryn uses GenLayer validator consensus for that semantic question while keeping authorization, IDs, policy locks, chain ID, replay checks, and state transitions deterministic.
+The only semantic result is a bounded defensive verdict. When evidence is unavailable, malformed, weak, contradictory, or cannot responsibly support a conclusion, the contract stores `INCONCLUSIVE`. It never labels a wallet or person.
 
-## Lifecycle
+## Lifecycle and safeguards
 
-`OBSERVED → CLASSIFYING → BENIGN | SCANNER | SUSPICIOUS | LIKELY_EXPLOIT_ATTEMPT | INCONCLUSIVE → MITIGATED`
+`lab → versioned source manifest → declared decoy → observed interaction → classification → finding → mitigation`
 
-The contract at `contracts/luryn.py` stores labs, decoys, observations, and compact verdicts. It locks a source manifest and uses a custom leader/validator pattern: both derive the result independently; validators require supported class and defense agreement. Weak, stale, blocked, or contradictory evidence must resolve safely as `INCONCLUSIVE`.
+- Owner controls policy and defenders; authorized defenders manage decoys/findings.
+- The manifest is canonical JSON text: `[{"source_type":"CONTEXT","url":"https://docs.genlayer.com/full-documentation.txt"}]`.
+- Interaction creation snapshots policy version, manifest hash, and decoy charter hash.
+- Duplicate `(chain, decoy, transaction hash)` submissions deterministically revert.
+- The evidence fingerprint is contract-derived from immutable context; it is not accepted from the LLM.
+- Classifications have bounded enums and validator-facing prompt-injection resistance. A single uncertain observation is handled conservatively.
 
-## Safety boundary
+Luryn deliberately does not generate payloads, trap assets, identify people, retaliate, or operate on mainnet.
 
-- Studionet/testnet and synthetic assets only.
-- No deposits, malicious token mechanics, exploit payloads, credential collection, retaliation, or deanonymization.
-- Public research must be sanitized. Verdicts are evidence-limited hypotheses, not accusations.
-
-## Run
+## Run locally
 
 ```powershell
 Copy-Item .env.example .env.local
@@ -28,24 +29,30 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-The current Studionet deployment is `0x660FDD28c566A262cC8f5Bf29769f1fd08d4ca16`. Deployment transaction: `0x7cefb0086efb6d171540efec598ad3fe556cd019ce9cd9fbd21065781552be79`. Until a local environment configures this address, the UI deliberately shows configuration-required and does not invent labs, addresses, transactions, or verdicts.
+Set `NEXT_PUBLIC_LURYN_CONTRACT_ADDRESS` only to a schema-verified StudioNet deployment. The UI uses an injected wallet, requests a real signature, waits for `FINALIZED`, then checks leader execution instead of treating finalization alone as success. The lifecycle writer accepts a JSON argument array matching the displayed contract function; it does not create synthetic state.
 
-## Contract quality gates
-
-Install the GenLayer tools, then run:
+## Verification
 
 ```powershell
-pip install genvm-linter genlayer-test
 genvm-lint check contracts/luryn.py --json
-pytest tests/direct/ -v
+pytest tests/direct -v
+npm.cmd exec eslint src -- --max-warnings=0
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+
+$env:LURYN_CONTRACT_ADDRESS='0x...'; npm.cmd run verify:schema
+npm.cmd run verify:onchain
 ```
 
-The GenLayer dependency header is pinned to the currently documented runner hash. A live consensus path requires a configured GenLayer environment and independent public evidence adapters; no deployment has been made by this repository.
+`verify:onchain` deploys a fresh contract if `LURYN_CONTRACT_ADDRESS` is unset, then executes the sequential lifecycle (including the duplicate rejection) against StudioNet. It retries documented StudioNet rate-limit responses and reports actual transaction hashes only after execution succeeds. It may legitimately produce an `INCONCLUSIVE` classification when the configured public source cannot establish transaction provenance.
 
-## Keeper
+## Current deployment truth
 
-`scripts/keeper.mjs` is intentionally dry-run by default. A keeper may trigger a due classification transaction but must never produce the verdict or bypass contract checks.
+There is no current verified deployment recorded in this README yet. A previous StudioNet contract was intentionally not presented as current because its CLI serialization path could turn a manifest JSON string into a GenVM list and cause subsequent writes to roll back. Run `npm.cmd run verify:onchain` after the StudioNet request window permits it; then copy its real address/transaction hashes into this section.
 
-## Current limitations
+## Original multi-write failure
 
-The contract contains the canonical core lifecycle and independent semantic validation pattern. The frontend is a truthful shell until a deployed address and verified `genlayer-js` schema are supplied. Source adapters, complete direct/integration tests, deployment, and dynamic contract reads are planned before a production-like rollout.
+The original `set_source_manifest` expected a `str` then called `json.loads`. The CLI's structured parameter parser decoded JSON-looking text into a GenVM list, producing `TypeError: ... not list`; its fallback error was `allowlisted https manifest required`. `register_decoy` similarly treated a GenVM `Address` as a Python string. These were calldata/type-boundary defects, not evidence of successful contract execution. The repaired contract uses native `Address` types, explicit canonical manifest validation, and GenLayerJS verification that passes the manifest as an actual string.
+
+Further evidence and exact local results are in [docs/development-evidence.md](docs/development-evidence.md).

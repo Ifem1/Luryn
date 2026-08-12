@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "lint": "eslint .",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify:schema": "node scripts/verify-schema.mjs",
+    "verify:onchain": "node scripts/onchain-verify.mjs"
   },
   "dependencies": {
     "@types/node": "22.10.2",

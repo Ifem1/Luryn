@@ -1,0 +1,10 @@
+import { createAccount, createClient } from "genlayer-js";
+import { studionet } from "genlayer-js/chains";
+const address = process.env.LURYN_CONTRACT_ADDRESS;
+if (!/^0x[a-fA-F0-9]{40}$/.test(address ?? "")) throw new Error("Set LURYN_CONTRACT_ADDRESS to a deployed Luryn contract.");
+const schema = await createClient({ chain: studionet, account: createAccount() }).getContractSchema(address);
+const expected = { create_lab:2,set_defender:3,set_source_manifest:2,register_decoy:4,set_decoy_active:2,submit_interaction:3,classify_interaction:1,group_pattern:3,set_finding_status:2,record_mitigation:2,publish_sanitized_lesson:2,get_lab:1,get_decoy:1,get_interaction:1,get_classification:1,get_pattern_dossier:1 };
+const methods = schema.methods ?? {};
+const problems = Object.entries(expected).flatMap(([name,count]) => !methods[name] ? [`Missing ${name}`] : methods[name].params?.length === count ? [] : [`${name}: wrong parameter count`]);
+if (problems.length) throw new Error(`Luryn schema mismatch:\n${problems.join("\n")}`);
+console.log(JSON.stringify({ ok:true,address,methodCount:Object.keys(methods).length },null,2));

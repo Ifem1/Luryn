@@ -42,7 +42,10 @@ export async function retryRateLimited<T>(run: () => Promise<T>, attempts = 4): 
     catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!/rate limit|429/i.test(message) || attempt === attempts - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 1_000 * 2 ** attempt));
+      const retryAfter = Number(message.match(/retry_after_seconds:\s*(\d+)/)?.[1] ?? 0);
+      const hourlyLimit = /per hour/i.test(message);
+      const delay = retryAfter || (hourlyLimit ? 3_600 : 2 ** attempt);
+      await new Promise((resolve) => setTimeout(resolve, delay * 1_000 + 250));
     }
   }
   throw new Error("Unreachable rate-limit retry state.");
