@@ -1,10 +1,10 @@
 /**
- * StudioNet currently allows 30 RPC requests/minute. Keep a conservative 24 RPM
+ * StudioNet currently allows 30 RPC requests/minute. Keep a conservative 12 RPM
  * per browser identity, serialize writes, and coalesce duplicate reads. This is
  * client-side protection; production-wide enforcement needs an RPC provider plan.
  */
 const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 24;
+const MAX_REQUESTS = 12;
 let requestTimes: number[] = [];
 let tail: Promise<unknown> = Promise.resolve();
 const pending = new Map<string, Promise<unknown>>();
