@@ -1,20 +1,4 @@
 "use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-export function WalletNavButton() {
-  const [account, setAccount] = useState<string | null>(null);
-  useEffect(() => {
-    async function refresh() {
-      if (!window.ethereum) return;
-      const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
-      setAccount(accounts[0] ?? null);
-    }
-    void refresh();
-    window.ethereum?.on?.("accountsChanged", (accounts: unknown) => setAccount(Array.isArray(accounts) && typeof accounts[0] === "string" ? accounts[0] : null));
-    return () => window.ethereum?.removeListener?.("accountsChanged", refresh);
-  }, []);
-  const label = account ? `${account.slice(0, 6)}…${account.slice(-4)}` : "Connect wallet";
-  return <Link className="button alt" href="/wallet" aria-label={account ? `Wallet connected: ${account}` : "Connect wallet"}>{label}</Link>;
-}
+import { useWallet } from "@/components/WalletProvider";
+export function WalletNavButton() { const { account, connect, disconnect } = useWallet(); return <div className="wallet-nav"><Link className="wallet-status" href="/dashboard">{account ? "Wallet connected" : "Not connected"}</Link>{account ? <button className="button alt" onClick={disconnect}>Disconnect</button> : <button className="button alt" onClick={() => void connect()}>Connect</button>}</div>; }
