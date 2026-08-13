@@ -28,7 +28,10 @@ async function retryRateLimit(run) {
 async function receipt(hash) {
   const tx = await retryRateLimit(() => client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, interval: 30_000, retries: 30 }));
   const leader = tx.consensus_data?.leader_receipt?.[0];
-  if (leader?.execution_result && leader.execution_result !== "SUCCESS") throw new Error(`${hash}: ${leader.execution_result}: ${leader.error ?? "Contract execution failed"}`);
+  if (leader?.execution_result && leader.execution_result !== "SUCCESS") {
+    const reason = leader.result?.payload ?? leader.genvm_result?.error_description ?? "Contract execution failed";
+    throw new Error(`${hash}: ${leader.execution_result}: ${reason}`);
+  }
   return tx;
 }
 async function read(name, args) { return retryRateLimit(() => client.readContract({ address, functionName: name, args, jsonSafeReturn: true })); }
