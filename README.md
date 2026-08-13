@@ -49,7 +49,14 @@ npm.cmd run verify:onchain
 
 ## Current deployment truth
 
-There is no current verified deployment recorded in this README yet. A previous StudioNet contract was intentionally not presented as current because its CLI serialization path could turn a manifest JSON string into a GenVM list and cause subsequent writes to roll back. Run `npm.cmd run verify:onchain` after the StudioNet request window permits it; then copy its real address/transaction hashes into this section.
+Verified StudioNet deployment (2026-08-13):
+
+- Contract: `0x31D0B4C3Bca6Bbe1642CC18be3379a9012bD36fb`
+- Deployment: `0xc6f94a6a032a9067eb543b4111220ffe26a9756dab81ebfb2e2b006631a080a1`
+- Source commit: `5d0d80e`
+- Schema verification: passed, 16 public methods.
+
+The sequential verifier completed `create_lab`, manifest configuration, decoy registration, interaction submission, replay rejection, classification, finding grouping, and mitigation. The classification correctly reached conservative `INCONCLUSIVE` because the fixture has no transaction-specific public evidence; its fingerprint was `0xd3332acf0b0f3a2187c891961fb087e4f0bd57855018b850f17f550a49aab93d`.
 
 ## Original multi-write failure
 

@@ -48,6 +48,21 @@ The repair uses the native `Address` type, canonical manifest JSON text, a stric
 
 ## StudioNet evidence
 
+### Verified complete cycle — 2026-08-13
+
+Deployment: `0xc6f94a6a032a9067eb543b4111220ffe26a9756dab81ebfb2e2b006631a080a1` → `0x31D0B4C3Bca6Bbe1642CC18be3379a9012bD36fb`.
+
+- create lab: `0x275bc1ebc2995c3f745f6652df4334d76e9f46031b8956484becafc5db17bd39`
+- set manifest: `0xa078f2491eab47d20cfc9a5898a5aff0ae609716934634ed7eaff2e66c9aeed3`
+- register decoy: `0x70e90b16098f3c4f189e4911c7ae5b67260ac5473b31841513452060c2e1ae36`
+- submit interaction: `0xf26084193f0e93d7b995a9e38313fdf5478811eb8226407cd42d4efcf83bc9cd`
+- duplicate replay (expected rollback): `0x577f54683abada50d9ad51f7ce02eb69c8edb2bb1b39c12529a3371974a29dfe`
+- classify: `0xe32a230983e80691409c55cb4b189115d88b670b56a67cf845c57c91ff6bd35f`
+- group finding: `0x55d1fc89de5bd275a3c7f609e60943e23f351ae374bbfb52814fdb02ba85f91e`
+- record mitigation: `0xe55a7341acbb31fd035da66419002266b1584afe1dbdf572c05d3a95d9d2b3ad`
+
+The real consensus verdict was `INCONCLUSIVE`, `LOW`, `WEAK`, `UNKNOWN`, `HUMAN_REVIEW`, with policy version `2`, one session call, and deterministic fingerprint `0xd3332acf0b0f3a2187c891961fb087e4f0bd57855018b850f17f550a49aab93d`. The resulting finding status read back as `MITIGATED`. Schema verification passed with 16 methods.
+
 Fresh verification deployment submitted: `0x627e79ddc4501f4f0af403f358940751d4d700f64050b850e93f091b50120a2e`.
 
 The following real sequential writes were submitted from one fresh verifier account before StudioNet applied its global 500-request/hour ceiling:
