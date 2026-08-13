@@ -1,7 +1,7 @@
 import { createAccount, createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 
-type Eip1193Provider = { request: (args: { method: string; params?: unknown[] | object }) => Promise<unknown> };
+type Eip1193Provider = { request: (args: { method: string; params?: unknown[] | object }) => Promise<unknown>; on?: (event: string, listener: (accounts: unknown) => void) => void; removeListener?: (event: string, listener: (accounts: unknown) => void) => void };
 declare global { interface Window { ethereum?: Eip1193Provider } }
 
 export const contractAddress = process.env.NEXT_PUBLIC_LURYN_CONTRACT_ADDRESS as `0x${string}` | undefined;
