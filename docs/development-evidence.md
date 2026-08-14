@@ -6,7 +6,7 @@ The contract now requires at least one canonical `TRANSACTION_EVIDENCE` HTTPS so
 
 Only the lab owner or an authorized defender can classify. Missing, malformed, unavailable, or off-target transaction evidence causes a `[TRANSIENT]` rollback and leaves the interaction `OBSERVED`, so it can be retried instead of being permanently settled by an arbitrary caller. Direct tests cover valid targeted evidence, off-target retryability, and unauthorized classification.
 
-The changed contract needs a fresh StudioNet deployment. The on-chain verifier now deliberately requires `LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE`; it will not use generic documentation or fabricated transaction data as evidence.
+Fresh StudioNet deployment completed 2026-08-14: `0xa88b5bd7c0a9cf172b69271c94151d2c9672d13c7c3f65f6ae8f393674735ea0` → `0x5047a87c052344233E47df9f20E4BBAB912CAd02`. The full lifecycle reached `MITIGATED`; its evidence fingerprint was `0x0ac475c6f7733b1e8b737aec9441c852fd5d87bdea028e331384c4db9aeda9fa` and its evidence digest was `0xa1ec398c025f70e24c6eae884050958138b5dfc586d8d14287a209a66065c82f`.
 
 ## P0 sequential-write failure (2026-08-11)
 

@@ -49,14 +49,14 @@ npm.cmd run verify:onchain
 
 ## Current deployment truth
 
-Verified StudioNet deployment (2026-08-13):
+Verified StudioNet deployment (2026-08-14):
 
-- Contract: `0x31D0B4C3Bca6Bbe1642CC18be3379a9012bD36fb`
-- Deployment: `0xc6f94a6a032a9067eb543b4111220ffe26a9756dab81ebfb2e2b006631a080a1`
-- Source commit: `5d0d80e`
+- Contract: `0x5047a87c052344233E47df9f20E4BBAB912CAd02`
+- Deployment: `0xa88b5bd7c0a9cf172b69271c94151d2c9672d13c7c3f65f6ae8f393674735ea0`
+- Source commit: `cfc7ff5`
 - Schema verification: passed, 16 public methods.
 
-The sequential verifier completed `create_lab`, manifest configuration, decoy registration, interaction submission, replay rejection, classification, finding grouping, and mitigation. The classification correctly reached conservative `INCONCLUSIVE` because the fixture has no transaction-specific public evidence; its fingerprint was `0xd3332acf0b0f3a2187c891961fb087e4f0bd57855018b850f17f550a49aab93d`.
+The sequential verifier completed `create_lab`, manifest configuration, decoy registration, interaction submission, replay rejection, classification, finding grouping, and mitigation. Validators fetched live StudioNet transaction evidence confirming the registered decoy target. The classification correctly reached conservative `INCONCLUSIVE`; its fingerprint was `0x0ac475c6f7733b1e8b737aec9441c852fd5d87bdea028e331384c4db9aeda9fa`.
 
 ## Original multi-write failure
 
