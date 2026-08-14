@@ -7,7 +7,7 @@ let address = process.env.LURYN_CONTRACT_ADDRESS;
 const privateKey = process.env.LURYN_PRIVATE_KEY ?? generatePrivateKey();
 if (!/^0x[a-fA-F0-9]{64}$/.test(privateKey)) throw new Error("LURYN_PRIVATE_KEY must be a 32-byte hex key.");
 const client = createClient({ chain: studionet, account: createAccount(privateKey) });
-const transactionEvidenceUrl = process.env.LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE;
+const transactionEvidenceUrl = process.env.LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE ?? "https://luryn-three.vercel.app/api/transaction-evidence/{tx_hash}";
 if (!transactionEvidenceUrl?.startsWith("https://") || !transactionEvidenceUrl.includes("{tx_hash}")) throw new Error("Set LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE to a trusted HTTPS JSON transaction endpoint containing {tx_hash}.");
 const manifest = JSON.stringify([{ source_type: "TRANSACTION_EVIDENCE", url: transactionEvidenceUrl }]);
 const charter = JSON.stringify({ purpose: "Synthetic no-value testnet canary", assets: "none", prohibited_response_actions: ["transfer", "retaliation"] });
@@ -47,12 +47,12 @@ if (!/^0x[a-fA-F0-9]{40}$/.test(address ?? "")) {
 await write("create_lab", ["Luryn on-chain verifier", "SANITIZED_PUBLIC"]);
 await write("set_source_manifest", [1, manifest]);
 if ((await read("get_lab", [1]))?.policy_version < 2) throw new Error("manifest snapshot missing");
-await write("register_decoy", [1, address, 61999, charter]);
+const decoyTx = await write("register_decoy", [1, address, 61999, charter]);
 if (!(await read("get_decoy", [1]))?.active) throw new Error("decoy missing");
-const interactionTx = await write("submit_interaction", [1, "0x" + "11".repeat(32), "verifier-session"]);
+const interactionTx = await write("submit_interaction", [1, decoyTx.hash, "verifier-session"]);
 if ((await read("get_interaction", [1]))?.lifecycle !== "OBSERVED") throw new Error("interaction missing");
 let replayRejected = false;
-try { await write("submit_interaction", [1, "0x" + "11".repeat(32), "verifier-session"]); } catch (error) { replayRejected = /duplicate interaction/i.test(String(error)); }
+try { await write("submit_interaction", [1, decoyTx.hash, "verifier-session"]); } catch (error) { replayRejected = /duplicate interaction/i.test(String(error)); }
 if (!replayRejected) throw new Error("replay was not rejected");
 const classificationTx = await write("classify_interaction", [1]);
 const classification = await read("get_classification", [1]); if (!classification?.evidence_fingerprint) throw new Error("classification provenance missing");
