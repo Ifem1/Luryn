@@ -13,11 +13,11 @@ The only semantic result is a bounded defensive verdict. When evidence is unavai
 `lab → versioned source manifest → declared decoy → observed interaction → classification → finding → mitigation`
 
 - Owner controls policy and defenders; authorized defenders manage decoys/findings.
-- The manifest is canonical JSON text: `[{"source_type":"CONTEXT","url":"https://docs.genlayer.com/full-documentation.txt"}]`.
+- The manifest is canonical JSON text and must include a trusted `TRANSACTION_EVIDENCE` HTTPS endpoint containing `{tx_hash}`, for example `[{"source_type":"TRANSACTION_EVIDENCE","url":"https://your-trusted-studionet-source.example/transactions/{tx_hash}}]`. The endpoint must return structured transaction data with the transaction hash and target address.
 - Interaction creation snapshots policy version, manifest hash, and decoy charter hash.
 - Duplicate `(chain, decoy, transaction hash)` submissions deterministically revert.
 - The evidence fingerprint is contract-derived from immutable context; it is not accepted from the LLM.
-- Classifications have bounded enums and validator-facing prompt-injection resistance. A single uncertain observation is handled conservatively.
+- A classification is owner/defender-authorized. Validators independently fetch the transaction evidence, require the submitted hash and registered decoy target to match, receive the full immutable charter, and fingerprint the resulting bounded evidence/status bundle. Missing or off-target evidence leaves the interaction retryable rather than permanently classified.
 
 Luryn deliberately does not generate payloads, trap assets, identify people, retaliate, or operate on mainnet.
 
@@ -45,7 +45,7 @@ $env:LURYN_CONTRACT_ADDRESS='0x...'; npm.cmd run verify:schema
 npm.cmd run verify:onchain
 ```
 
-`verify:onchain` deploys a fresh contract if `LURYN_CONTRACT_ADDRESS` is unset, then executes the sequential lifecycle (including the duplicate rejection) against StudioNet. It retries documented StudioNet rate-limit responses and reports actual transaction hashes only after execution succeeds. It may legitimately produce an `INCONCLUSIVE` classification when the configured public source cannot establish transaction provenance.
+`verify:onchain` deploys a fresh contract if `LURYN_CONTRACT_ADDRESS` is unset, then executes the sequential lifecycle (including the duplicate rejection) against StudioNet. It requires a real trusted transaction-evidence endpoint to pass classification; it never substitutes generic documentation or fabricated transaction data.
 
 ## Current deployment truth
 

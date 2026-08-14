@@ -7,7 +7,9 @@ let address = process.env.LURYN_CONTRACT_ADDRESS;
 const privateKey = process.env.LURYN_PRIVATE_KEY ?? generatePrivateKey();
 if (!/^0x[a-fA-F0-9]{64}$/.test(privateKey)) throw new Error("LURYN_PRIVATE_KEY must be a 32-byte hex key.");
 const client = createClient({ chain: studionet, account: createAccount(privateKey) });
-const manifest = JSON.stringify([{ source_type: "CONTEXT", url: "https://docs.genlayer.com/full-documentation.txt" }]);
+const transactionEvidenceUrl = process.env.LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE;
+if (!transactionEvidenceUrl?.startsWith("https://") || !transactionEvidenceUrl.includes("{tx_hash}")) throw new Error("Set LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE to a trusted HTTPS JSON transaction endpoint containing {tx_hash}.");
+const manifest = JSON.stringify([{ source_type: "TRANSACTION_EVIDENCE", url: transactionEvidenceUrl }]);
 const charter = JSON.stringify({ purpose: "Synthetic no-value testnet canary", assets: "none", prohibited_response_actions: ["transfer", "retaliation"] });
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

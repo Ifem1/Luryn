@@ -1,5 +1,13 @@
 # Development evidence
 
+## Steward remediation — 2026-08-14
+
+The contract now requires at least one canonical `TRANSACTION_EVIDENCE` HTTPS source with a `{tx_hash}` placeholder. At classification time, validators fetch the source independently and require structured fetched data to contain both the submitted transaction hash and the registered decoy target. The interaction retains an immutable full charter snapshot, which is supplied to the judgment prompt. The resulting fingerprint now binds the transaction ID, immutable policy and manifest/charter hashes, plus a digest of the canonical URL/source-type/status/body-hash bundle.
+
+Only the lab owner or an authorized defender can classify. Missing, malformed, unavailable, or off-target transaction evidence causes a `[TRANSIENT]` rollback and leaves the interaction `OBSERVED`, so it can be retried instead of being permanently settled by an arbitrary caller. Direct tests cover valid targeted evidence, off-target retryability, and unauthorized classification.
+
+The changed contract needs a fresh StudioNet deployment. The on-chain verifier now deliberately requires `LURYN_TRANSACTION_EVIDENCE_URL_TEMPLATE`; it will not use generic documentation or fabricated transaction data as evidence.
+
 ## P0 sequential-write failure (2026-08-11)
 
 The original deployed contracts exposed `set_source_manifest(lab_id, sources_json: str)`, but the smoke test passed a JSON array directly through the GenLayer CLI. The CLI parser decoded it as GenVM array/map calldata before Python execution. The contract then assumed native Python `str`, `list`, and `dict` values. This produced:

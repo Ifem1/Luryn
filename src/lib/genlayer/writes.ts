@@ -15,7 +15,10 @@ export async function submitLurynWrite(account: `0x${string}`, functionName: Lur
   const hash = await retryRateLimited(() => client.writeContract({ address: contract, functionName, args: args as CalldataEncodable[], value: 0n }));
   const receipt = await waitForFinalized(account, hash);
   const leader = receipt.consensus_data?.leader_receipt?.[0];
-  if (leader?.execution_result && leader.execution_result !== "SUCCESS") throw new Error(`${hash}: ${leader.execution_result}. ${leader.error ?? "Contract execution failed."}`);
+  if (leader?.execution_result && leader.execution_result !== "SUCCESS") {
+    const receipt = leader as unknown as { result?: { payload?: string }; error?: string };
+    throw new Error(`${hash}: ${leader.execution_result}. ${receipt.result?.payload ?? receipt.error ?? "Contract execution failed."}`);
+  }
   return { hash, receipt };
 }
 

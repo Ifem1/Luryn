@@ -3,7 +3,7 @@ import pytest
 from gltest.direct import VMContext, create_test_addresses, deploy_contract
 
 CONTRACT = Path(__file__).parents[2] / "contracts" / "luryn.py"
-MANIFEST = '[{"source_type":"CONTEXT","url":"https://docs.genlayer.com/full-documentation.txt"}]'
+MANIFEST = '[{"source_type":"TRANSACTION_EVIDENCE","url":"https://evidence.example/tx/{tx_hash}"},{"source_type":"CONTEXT","url":"https://docs.genlayer.com/full-documentation.txt"}]'
 CHARTER = '{"purpose":"Synthetic no-value canary"}'
 TX = "0x" + "11" * 32
 
@@ -51,6 +51,7 @@ def test_classification_stores_protocol_fingerprint(setup):
     vm, contract, _, _ = setup
     create_lab(vm, contract)
     contract.submit_interaction(1, TX, "session")
+    vm.mock_web("evidence.example", {"status": 200, "body": '{"hash":"'+TX+'","to":"0x' + "aa" * 20 + '"}'})
     vm.mock_web("docs.genlayer.com", {"status": 200, "body": "public context only"})
     vm.mock_llm(".*", '{"interaction_class":"INCONCLUSIVE","intent_confidence":"HIGH","pattern_family":"UNKNOWN","evidence_strength":"STRONG","novelty_band":"UNKNOWN","recommended_defense":"NO_ACTION","short_reason":"No transaction endpoint was provided."}')
     contract.classify_interaction(1)
@@ -58,3 +59,22 @@ def test_classification_stores_protocol_fingerprint(setup):
     assert result["interaction_class"] == "INCONCLUSIVE"
     assert result["intent_confidence"] == "LOW"
     assert result["evidence_fingerprint"].startswith("0x")
+    assert result["evidence_digest"].startswith("0x")
+    assert "TRANSACTION_EVIDENCE" in result["evidence_statuses"]
+
+def test_unverified_transaction_evidence_stays_retryable(setup):
+    vm, contract, _, _ = setup
+    create_lab(vm, contract)
+    contract.submit_interaction(1, TX, "session")
+    vm.mock_web("evidence.example", {"status": 200, "body": '{"hash":"'+TX+'","to":"0x' + "bb" * 20 + '"}'})
+    vm.mock_web("docs.genlayer.com", {"status": 200, "body": "context"})
+    with vm.expect_revert("transaction evidence did not verify"):
+        contract.classify_interaction(1)
+    assert contract.get_interaction(1)["lifecycle"] == "OBSERVED"
+
+def test_only_owner_or_defender_can_classify(setup):
+    vm, contract, _, stranger = setup
+    create_lab(vm, contract)
+    contract.submit_interaction(1, TX, "session")
+    with vm.prank(stranger), vm.expect_revert("defender required"):
+        contract.classify_interaction(1)
